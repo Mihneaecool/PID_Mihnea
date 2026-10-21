@@ -843,7 +843,54 @@ namespace Framework.ViewModel.Commands
 
         #endregion
 
+
         #region Thresholding
+
+        private ICommand _otsuThresholdCommand;
+
+        public ICommand OtsuThresholdCommand
+        {
+            get
+            {
+                if (_otsuThresholdCommand == null)
+                    _otsuThresholdCommand = new RelayCommand(OtsuThreshold);
+
+                return _otsuThresholdCommand;
+            }
+        }
+
+        private void OtsuThreshold(object parameter)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            Image<Gray, byte> grayImage;
+
+            if (GrayInitialImage != null)
+            {
+                grayImage = GrayInitialImage;
+            }
+            else if (ColorInitialImage != null)
+            {
+                grayImage = Tools.Convert(ColorInitialImage);
+            }
+            else
+            {
+                return;
+            }
+
+            byte threshold = Thresholding.OtsuThreshold(grayImage);
+
+            ClearProcessedCanvas(parameter);
+            GrayProcessedImage = Tools.Binary(grayImage, threshold);
+
+            MessageBox.Show(
+                "Pragul Otsu calculat este T = " + threshold,
+                "Otsu Threshold",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
         #endregion
 
         #region Filters
