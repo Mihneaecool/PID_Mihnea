@@ -894,6 +894,196 @@ namespace Framework.ViewModel.Commands
         #endregion
 
         #region Filters
+
+        #region Separable filter
+        private ICommand _SeparableFilterCommand;
+        public ICommand SeparableFilterCommand
+        {
+            get
+            {
+                if (_SeparableFilterCommand == null)
+                    _SeparableFilterCommand = new RelayCommand(SeparableFilter);
+                return _SeparableFilterCommand;
+            }
+        }
+
+        private void SeparableFilter(object parameter)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            double[] v = { 0.25, 0.5, 0.25 };
+
+            ClearProcessedCanvas(parameter);
+
+            if (GrayInitialImage != null)
+            {
+                GrayProcessedImage = Filters.SeparableFilter(GrayInitialImage, v);
+            }
+            else if (ColorInitialImage != null)
+            {
+                ColorProcessedImage = Filters.SeparableFilter(ColorInitialImage, v);
+            }
+        }
+        #endregion
+
+        #region Smoothing filter
+
+        private ICommand _SmoothingFilterCommand;
+
+        public ICommand SmoothingFilterCommand
+        {
+            get
+            {
+                if (_SmoothingFilterCommand == null)
+                    _SmoothingFilterCommand = new RelayCommand(SmoothingFilter);
+
+                return _SmoothingFilterCommand;
+            }
+        }
+
+        private void SmoothingFilter(object parameter)
+        {
+            double[,] mask =
+            {
+                { 0.1, 0.1, 0.1 },
+                { 0.1, 0.2, 0.1 },
+                { 0.1, 0.1, 0.1 }
+            };
+
+            ApplyCustomFilter(parameter, mask);
+        }
+
+        private void ApplyCustomFilter(object parameter, double[,] mask)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            ClearProcessedCanvas(parameter);
+
+            if (GrayInitialImage != null)
+            {
+                GrayProcessedImage =
+                    Filters.ApplyFilter(GrayInitialImage, mask);
+            }
+            else if (ColorInitialImage != null)
+            {
+                ColorProcessedImage =
+                    Filters.ApplyFilter(ColorInitialImage, mask);
+            }
+        }
+
+        #endregion
+
+        #region Sharpening filter
+
+        private ICommand _SharpeningFilterCommand;
+
+        public ICommand SharpeningFilterCommand
+        {
+            get
+            {
+                if (_SharpeningFilterCommand == null)
+                    _SharpeningFilterCommand = new RelayCommand(SharpeningFilter);
+
+                return _SharpeningFilterCommand;
+            }
+        }
+
+        private void SharpeningFilter(object parameter)
+        {
+            double[,] mask =
+            {
+        {  0, -1,  0 },
+        { -1,  5, -1 },
+        {  0, -1,  0 }
+    };
+
+            ApplyCustomFilter(parameter, mask);
+        }
+
+        #endregion
+
+        #region Gauss filter
+        private ICommand _GaussFilterCommand;
+        public ICommand GaussFilterCommand
+        {
+            get
+            {
+                if (_GaussFilterCommand == null)
+                    _GaussFilterCommand = new RelayCommand(GaussFilter);
+                return _GaussFilterCommand;
+            }
+        }
+
+        private void GaussFilter(object parameter)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            List<string> labels = new List<string> { "SigmaX", "SigmaY" };
+            DialogWindow window = new DialogWindow(_mainVM, labels);
+            window.ShowDialog();
+
+            List<double> values = window.GetValues();
+            if (values == null)
+                return;
+
+            double sigmaX = values[0];
+            double sigmaY = values[1];
+
+
+            ClearProcessedCanvas(parameter);
+
+            if (GrayInitialImage != null)
+            {
+                GrayProcessedImage = Filters.GaussFilter(GrayInitialImage, sigmaX, sigmaY);
+            }
+            else if (ColorInitialImage != null)
+            {
+                ColorProcessedImage = Filters.GaussFilter(ColorInitialImage, sigmaX, sigmaY);
+            }
+        }
+        #endregion
+
+        #region Median filter
+
+        private ICommand _MedianFilterCommand;
+
+        public ICommand MedianFilterCommand
+        {
+            get
+            {
+                if (_MedianFilterCommand == null)
+                    _MedianFilterCommand = new RelayCommand(MedianFilter);
+
+                return _MedianFilterCommand;
+            }
+        }
+
+        private void MedianFilter(object parameter)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            List<string> labels = new List<string> { "Kernel size" };
+
+            DialogWindow window = new DialogWindow(_mainVM, labels);
+            window.ShowDialog();
+
+            List<double> values = window.GetValues();
+
+            double value = values[0];
+
+            int kernelSize = (int)value;
+
+            ClearProcessedCanvas(parameter);
+
+            GrayProcessedImage = Filters.MedianFiltering(GrayInitialImage, kernelSize);
+        }
+
+        #endregion
+
         #endregion
 
         #region Morphological operations

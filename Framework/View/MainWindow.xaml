@@ -199,11 +199,33 @@
 
 
             <MenuItem Header="Filters" 
-                      Background="{Binding Path=Theme.MenuItemBackgroundColor}"
-                      Foreground="{Binding Path=Theme.MenuItemForegroundColor}">
-                <MenuItem Header="Low-pass">
+          Background="{Binding Path=Theme.MenuItemBackgroundColor}"
+          Foreground="{Binding Path=Theme.MenuItemForegroundColor}">
 
+                <MenuItem Header="Custom filters">
+                    <MenuItem Header="Separable filter"
+              Command="{Binding MenuCommands.SeparableFilterCommand}"
+              CommandParameter="{Binding ElementName=processedImageCanvas}"/>
+
+                    <MenuItem Header="Smoothing filter"
+                  Command="{Binding MenuCommands.SmoothingFilterCommand}"
+                  CommandParameter="{Binding ElementName=processedImageCanvas}"/>
+
+                    <MenuItem Header="Sharpening filter"
+                  Command="{Binding MenuCommands.SharpeningFilterCommand}"
+                  CommandParameter="{Binding ElementName=processedImageCanvas}"/>
                 </MenuItem>
+
+                <MenuItem Header="Low-pass">
+                    <MenuItem Header="Gauss filter"
+                  Command="{Binding MenuCommands.GaussFilterCommand}"
+                  CommandParameter="{Binding ElementName=processedImageCanvas}"/>
+
+                    <MenuItem Header="Median filter"
+                  Command="{Binding MenuCommands.MedianFilterCommand}"
+                  CommandParameter="{Binding ElementName=processedImageCanvas}"/>
+                </MenuItem>
+
                 <MenuItem Header="High-pass">
 
                 </MenuItem>
