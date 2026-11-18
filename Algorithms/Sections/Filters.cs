@@ -226,5 +226,116 @@ namespace Algorithms.Sections
         }
 
         #endregion
+
+
+        #region Prewitt color gradient
+
+        public static Image<Bgr, byte> PrewittColor(Image<Bgr, byte> inputImage, double threshold)
+        {
+            if (inputImage == null)
+                throw new ArgumentNullException(nameof(inputImage));
+
+            if (threshold < 0 || double.IsNaN(threshold) ||
+                double.IsInfinity(threshold))
+                throw new ArgumentOutOfRangeException(nameof(threshold));
+
+            double[,] Px =
+            {
+                { -1,  0,  1 },
+                { -1,  0,  1 },
+                { -1,  0,  1 }
+            };
+
+            double[,] Py =
+            {
+                { -1, -1, -1 },
+                {  0,  0,  1 },
+                {  1,  1,  1 }
+            };
+
+            int offset = 1;
+
+            Image<Bgr, byte> borderImage =
+                new Image<Bgr, byte>(
+                    inputImage.Width + 2,
+                    inputImage.Height + 2);
+
+            CvInvoke.CopyMakeBorder(
+                inputImage,
+                borderImage,
+                offset,
+                offset,
+                offset,
+                offset,
+                Emgu.CV.CvEnum.BorderType.Reflect101);
+
+            Image<Bgr, byte> result =
+                new Image<Bgr, byte>(inputImage.Size);
+
+            for (int y = offset; y < borderImage.Height - offset; y++)
+            {
+                for (int x = offset; x < borderImage.Width - offset; x++)
+                {
+                    double[] Ex = new double[3];
+                    double[] Ey = new double[3];
+
+                    for (int channel = 0; channel < 3; channel++)
+                    {
+                        double sumX = 0;
+                        double sumY = 0;
+
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
+                            {
+                                double pixel = borderImage.Data[y + i, x + j, channel];
+
+                                sumX += Px[i + 1, j + 1] * pixel;
+                                sumY += Py[i + 1, j + 1] * pixel;
+                            }
+                        }
+
+                        Ex[channel] = sumX;
+                        Ey[channel] = sumY;
+                    }
+
+                    double EB = Math.Sqrt(
+                        Ex[0] * Ex[0] + Ey[0] * Ey[0]);
+
+                    double EG = Math.Sqrt(
+                        Ex[1] * Ex[1] + Ey[1] * Ey[1]);
+
+                    double ER = Math.Sqrt(
+                        Ex[2] * Ex[2] + Ey[2] * Ey[2]);
+
+                    
+                    double sum = ER + EG + EB;
+
+                    if (sum > threshold)
+                    {
+                        result.Data[y - offset, x - offset, 0] =
+                            (byte)Math.Min(255, EB);
+
+                        result.Data[y - offset, x - offset, 1] =
+                            (byte)Math.Min(255, EG);
+
+                        result.Data[y - offset, x - offset, 2] =
+                            (byte)Math.Min(255, ER);
+                    }
+                    else
+                    {
+                        result.Data[y - offset, x - offset, 0] = 0;
+                        result.Data[y - offset, x - offset, 1] = 0;
+                        result.Data[y - offset, x - offset, 2] = 0;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
     }
+
 }

@@ -1084,6 +1084,74 @@ namespace Framework.ViewModel.Commands
 
         #endregion
 
+
+        #region Prewitt color gradient
+
+        private ICommand _prewittColorCommand;
+
+        public ICommand PrewittColorCommand
+        {
+            get
+            {
+                if (_prewittColorCommand == null)
+                    _prewittColorCommand =
+                        new RelayCommand(PrewittColor);
+
+                return _prewittColorCommand;
+            }
+        }
+
+        private void PrewittColor(object parameter)
+        {
+            if (!IsImageLoaded())
+                return;
+
+            if (ColorInitialImage == null)
+            {
+                MessageBox.Show(
+                    "Please load a color image!",
+                    "Prewitt color gradient",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            
+            List<string> labels = new List<string>
+            {
+                "Threshold (T)"
+            };
+
+            DialogWindow window = new DialogWindow(_mainVM, labels);
+            window.ShowDialog();
+
+            List<double> values = window.GetValues();
+
+            if (values == null || values.Count < 1)
+                return;
+
+            double threshold = values[0];
+
+            if (threshold < 0 ||
+                double.IsNaN(threshold) ||
+                double.IsInfinity(threshold))
+            {
+                MessageBox.Show(
+                    "Threshold must be a non-negative number!");
+
+                return;
+            }
+
+            ClearProcessedCanvas(parameter);
+
+            ColorProcessedImage =
+                Filters.PrewittColor(ColorInitialImage, threshold);
+        }
+
+        #endregion
+
+
         #endregion
 
         #region Morphological operations
